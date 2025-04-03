@@ -1,0 +1,8 @@
+python-dotenv
+mysqlclient
+pymysql
+djangorestframework
+djangorestframework-simplejwt
+Pillow
+graphene
+graphene_django
