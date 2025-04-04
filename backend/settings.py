@@ -40,6 +40,8 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'graphene_django',
+    'graphql',
     'users',
     'posts',
     'django.contrib.admin',
@@ -171,5 +173,5 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 GRAPHENE = {
-    "SCHEMA": "graphql.schema.schema"
+    "SCHEMA": "social_graphql.schema.schema"
 }

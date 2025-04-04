@@ -357,3 +357,4 @@ class PostFileTestCase(APITestCase):
         self.post.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertNotIn(post_file, self.post.files.all())
+
