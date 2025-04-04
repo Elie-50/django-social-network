@@ -101,3 +101,37 @@ class CommentLikeView(LikeView):
 
 class ReplyLikeView(LikeView):
     Model = Reply
+
+class PostFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            id = request.data.get('post')
+            post = Post.objects.get(id=id)
+            
+            if post.author != request.user:
+                raise PermissionDenied()
+            
+            serializer = PostFileSerializer(data=request.data)
+
+            if serializer.is_valid():
+                serializer.save()
+            return Response({"message":"File added successfully"}, status=status.HTTP_201_CREATED)
+        except Post.DoesNotExist:
+            raise NotFound()
+        
+    def delete(self, request, *args, **kwargs):
+        try:
+            id = kwargs.get('id')
+            file = PostFile.objects.get(id=id)
+            
+            if file.post.author != request.user:
+                raise PermissionDenied()
+            
+            file.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Post.DoesNotExist:
+            raise NotFound("File not found")
+        except KeyError:
+            raise ParseError("'id' was not provided")

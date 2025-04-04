@@ -1,10 +1,9 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from .models import Post, Comment, Reply
+from .models import Post, Comment, Reply, PostFile
 from users.models import User
-from users.tests import get_jwt_token
-from django.db import transaction
+from helpers.util import *
 
 class PostViewTest(APITestCase):
 
@@ -225,7 +224,7 @@ class LikeTestCase(APITestCase):
             password='testpassword123'
         )
 
-         # Authenticate user1 for the tests
+        # Authenticate user1 for the tests
         self.token = get_jwt_token(self.user1)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
@@ -321,4 +320,40 @@ class LikeTestCase(APITestCase):
         self.assertNotIn(self.user1, self.reply.likers.all())
 
 
-        
+class PostFileTestCase(APITestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            username="testuser",
+            password='testpassword123'
+        )
+
+        # Authenticate user1 for the tests
+        self.token = get_jwt_token(self.user1)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+
+        self.post = Post.objects.create(content="Post content", author=self.user1)
+        self.image = create_dummy_image()
+
+    def test_upload_image_to_file(self):
+        data = {
+            'file': self.image,
+            'post': self.post.id
+        }
+        url = reverse('post-file')
+        response = self.client.post(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.post.refresh_from_db()
+
+        self.assertEqual(self.post.files.count(), 1)
+
+    def test_remove_post_file(self):
+        post_file = PostFile.objects.create(post=self.post, file=self.image)
+
+        url = reverse('post-file', kwargs={'id': post_file.id})
+
+        response = self.client.delete(url)
+
+        self.post.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(post_file, self.post.files.all())

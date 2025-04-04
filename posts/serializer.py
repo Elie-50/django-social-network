@@ -18,7 +18,6 @@ class BaseSerializer(serializers.ModelSerializer):
         return instance
     
 
-
 class PostSerializer(BaseSerializer):
     author = UserSerializer(read_only=True)
 
@@ -41,3 +40,10 @@ class ReplySerializer(BaseSerializer):
     class Meta:
         model = Reply
         fields = ['id', 'content', 'author', 'comment', 'reply_date', 'edited']
+
+class PostFileSerializer(serializers.ModelSerializer):
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    class Meta:
+        model = PostFile
+        fields = ['id', 'post', 'file']

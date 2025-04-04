@@ -1,23 +1,13 @@
 from rest_framework.test import APITestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from users.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.urls import reverse
-from PIL import Image
-import io
-
-def get_jwt_token(user):
-    """
-    Helper method to get JWT token for a user.
-    """
-    refresh = RefreshToken.for_user(user)
-    return str(refresh.access_token)
+from helpers.util import *
 
 class UserTests(APITestCase):
     def setUp(self):
         # Set up a test user
-        image = self.create_dummy_image()
+        image = create_dummy_image()
         self.user_data = {
             'username': 'testuser',
             'password': 'testpassword123',
@@ -26,16 +16,6 @@ class UserTests(APITestCase):
         }
         self.user = User.objects.create_user(**self.user_data)
         self.url = reverse('user-details')
-    
-    def create_dummy_image(self):
-        """Create a dummy image for testing."""
-        # Create an image in memory
-        image = Image.new('RGB', (100, 100), color = (255, 0, 0))
-        image_file = io.BytesIO()
-        image.save(image_file, format='JPEG')
-        image_file.name = 'profile_picture.jpg'  # Ensure it has a name
-        image_file.seek(0)  # Go to the beginning of the file
-        return SimpleUploadedFile(image_file.name, image_file.read(), content_type='image/jpeg')
 
 
     def test_create_user(self):
