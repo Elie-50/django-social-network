@@ -40,7 +40,6 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
-    'jwtauth',
     'users',
     'posts',
     'django.contrib.admin',

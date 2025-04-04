@@ -211,3 +211,114 @@ class ReplyViewTest(APITestCase):
         response = self.client.delete(url)
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class LikeTestCase(APITestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            username='testuser',
+            password='testpassword123'
+        )
+
+        self.user2 = User.objects.create_user(
+            username='testuser2',
+            password='testpassword123'
+        )
+
+         # Authenticate user1 for the tests
+        self.token = get_jwt_token(self.user1)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+
+        # Create a post, comment, and reply by user1
+        self.post = Post.objects.create(content="Test Post", author=self.user2)
+        self.comment = Comment.objects.create(content="Test Comment", author=self.user1, post=self.post)
+        self.reply = Reply.objects.create(content="Test Reply", author=self.user2, comment=self.comment)
+
+    def test_like_post(self):
+        # url for the post like
+        url = reverse('post-like', kwargs={'id': self.post.id})
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.post.refresh_from_db()
+        self.assertIn(self.user1, self.post.likers.all())
+
+        # test like post again
+
+        response2 = self.client.post(url)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.likers.count(), 1)
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+
+    def test_unlike_post(self):
+        # add user1 to post likers
+        self.post.likers.add(self.user1)
+
+        # unlike the post
+        url = reverse('post-like', kwargs={'id': self.post.id})
+        response = self.client.delete(url)
+
+        self.post.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(self.user1, self.post.likers.all())
+
+    def test_like_comment(self):
+        # url for the comment like
+        url = reverse('comment-like', kwargs={'id': self.comment.id})
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.post.refresh_from_db()
+        self.assertIn(self.user1, self.comment.likers.all())
+
+        # test like comement again
+
+        response2 = self.client.post(url)
+        self.comment.refresh_from_db()
+        self.assertEqual(self.comment.likers.count(), 1)
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+
+    def test_unlike_comment(self):
+        # add user1 to comment likers
+        self.comment.likers.add(self.user1)
+
+        # unlike the comment
+        url = reverse('comment-like', kwargs={'id': self.comment.id})
+        response = self.client.delete(url)
+
+        self.comment.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(self.user1, self.comment.likers.all())
+
+    def test_like_reply(self):
+        # url for the reply like
+        url = reverse('reply-like', kwargs={'id': self.reply.id})
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.post.refresh_from_db()
+        self.assertIn(self.user1, self.reply.likers.all())
+
+        # test like reply again
+        response2 = self.client.post(url)
+        self.post.refresh_from_db()
+        self.assertEqual(self.reply.likers.count(), 1)
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+
+    def test_unlike_reply(self):
+        # add user1 to reply likers
+        self.reply.likers.add(self.user1)
+
+        # unlike the reply
+        url = reverse('reply-like', kwargs={'id': self.reply.id})
+        response = self.client.delete(url)
+
+        self.reply.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(self.user1, self.reply.likers.all())
+
+
+        

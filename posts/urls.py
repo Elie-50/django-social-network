@@ -8,4 +8,7 @@ urlpatterns = [
     path('comment/', CommentView.as_view(), name='comment-details'),
     path('reply/<int:id>', ReplyView.as_view(), name='reply-details'),
     path('reply/', ReplyView.as_view(), name='reply-details'),
+    path('like/<int:id>', PostLikeView.as_view(), name='post-like'),
+    path('comment/like/<int:id>', CommentLikeView.as_view(), name='comment-like'),
+    path('reply/like/<int:id>', ReplyLikeView.as_view(), name='reply-like')
 ]
